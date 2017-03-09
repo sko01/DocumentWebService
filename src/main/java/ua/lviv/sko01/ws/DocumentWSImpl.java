@@ -1,45 +1,40 @@
 package ua.lviv.sko01.ws;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 
-import ua.lviv.sko01.file.service.DocumentProcessingService;
-import ua.lviv.sko01.hibernate.dao.DocumentDAO;
-import ua.lviv.sko01.hibernate.dao.DocumentDAOImpl;
-import ua.lviv.sko01.hibernate.model.Document;
+import ua.lviv.sko01.dto.DocumentDTO;
+import ua.lviv.sko01.ws.service.DocumentService;
+import ua.lviv.sko01.ws.service.DocumentServiceImpl;
 
 @WebService(endpointInterface = "ua.lviv.sko01.ws.DocumentWS")
+@XmlAccessorType(XmlAccessType.PROPERTY)
 public class DocumentWSImpl implements DocumentWS{
 	
 	@WebMethod
-	public String getDocument(@WebParam(name = "documentId") int id){
-		DocumentDAO documentDao = new DocumentDAOImpl();
-		Document document = documentDao.getDocument(id);
-		String fileName = DocumentProcessingService.saveXmlDataToFolder(document);
-		return new String(DocumentProcessingService.getPdfData(fileName));
+	@XmlElement(name = "Document")
+	public DocumentDTO getDocument(@WebParam(name = "documentId") int id){
+		DocumentService documentService = new DocumentServiceImpl();
+		return documentService.getDocument(id);
 	}
 	
 	@WebMethod
+	@XmlElement(name = "DocumentList")
 	public List<String> getDocuments() {
-		DocumentDAO documentDao = new DocumentDAOImpl();
-		List<Document> storedDocuments = documentDao.getDocuments();
-		List<String> documents = new ArrayList<String>();
-		for (Document storedDocument : storedDocuments) {
-			documents.add(storedDocument.toString());
-		}
-		return documents;
+		DocumentService documentService = new DocumentServiceImpl();
+		return documentService.getDocuments();
 	}
 
 	@WebMethod
 	public void storeDocument(byte[] data) {
-		DocumentDAO documentDao = new DocumentDAOImpl();
-		Document document = new Document();
-		document.setDocData(data);
-		documentDao.storeDocument(document);
+		DocumentService documentService = new DocumentServiceImpl();
+		documentService.storeDocument(data);
 	}
 
 }

@@ -12,6 +12,7 @@ import ua.lviv.sko01.hibernate.util.HibernateUtil;
 public class DocumentDAOImpl implements DocumentDAO {
 	private SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 
+	@SuppressWarnings("unchecked")
 	public List<Document> getDocuments(){
 		List<Document> documents = null;
 		Session session = null;

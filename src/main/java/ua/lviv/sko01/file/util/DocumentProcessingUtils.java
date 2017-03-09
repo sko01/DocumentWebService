@@ -1,4 +1,4 @@
-package ua.lviv.sko01.file.service;
+package ua.lviv.sko01.file.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -8,13 +8,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
+import ua.lviv.sko01.dto.DocumentDTO;
 import ua.lviv.sko01.hibernate.model.Document;
 
-public class DocumentProcessingService{
-	private static final Logger LOG = Logger.getLogger(DocumentProcessingService.class); 
+public class DocumentProcessingUtils {
+	private static final Logger LOG = Logger.getLogger(DocumentProcessingUtils.class); 
 	private static final String filePath = "C:\\processing_folder";
 	private static final String xmlExtention = ".xml";
 	private static final String pdfExtention = ".pdf";
@@ -27,12 +27,13 @@ public class DocumentProcessingService{
 		return fileName;
 	}
 	
-	public static byte[] getPdfData(String fileName) {
+	public static void getPdfData(String fileName, DocumentDTO documentDTO) {
 		if(generatePdfFromXml(fileName)) {
 			deleteTemporaryFiles(fileName + xmlExtention);
-			return loadFileAsBytesArray(fileName + pdfExtention);
+			loadFileAsBytesArray(fileName + pdfExtention, documentDTO);
+		} else {
+			documentDTO.getErrors().add("Failed to create PDF representation");
 		}
-		return "Failed to create PDF representation".getBytes();
 	}
 
 	public static boolean generatePdfFromXml(String fileName) {
@@ -75,7 +76,7 @@ public class DocumentProcessingService{
 		}
 	}
 	
-	private static byte[] loadFileAsBytesArray(String fileName){
+	private static void loadFileAsBytesArray(String fileName, DocumentDTO documentDTO){
 		File file = new File(filePath + "\\" + fileName);
         int length = (int) file.length();
         byte[] bytes = new byte[length];
@@ -83,11 +84,12 @@ public class DocumentProcessingService{
         	BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
 			reader.read(bytes, 0, length);
 			reader.close();
+			documentDTO.setData(bytes);
 			deleteTemporaryFiles(fileName);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}        
-        return bytes;
+			documentDTO.getErrors().add(e.getMessage());
+		}
 	}
 	
 	private static void deleteTemporaryFiles(String fileName){
@@ -98,5 +100,4 @@ public class DocumentProcessingService{
 			LOG.warn("Failed to delete " + fileName + " file");
 		}
 	}
-
 }
