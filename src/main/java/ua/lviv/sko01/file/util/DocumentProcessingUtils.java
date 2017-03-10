@@ -32,13 +32,18 @@ public class DocumentProcessingUtils {
 			deleteTemporaryFiles(fileName + xmlExtention);
 			loadFileAsBytesArray(fileName + pdfExtention, documentDTO);
 		} else {
+			deleteTemporaryFiles(fileName + xmlExtention);
 			documentDTO.getErrors().add("Failed to create PDF representation");
 		}
 	}
 
 	public static boolean generatePdfFromXml(String fileName) {
 		Process process;
-		String command = String.format("%1s\\process.bat %2s %3s", filePath, filePath + "\\" + fileName + xmlExtention, filePath + "\\" + fileName + pdfExtention);
+		String fullDataFilePath = filePath + "\\" + fileName + xmlExtention;
+		String fullOutputFilePath = filePath + "\\" + fileName + pdfExtention;
+		String fullFormPath = filePath + "\\Sample_Invoice.xatw";
+		//String command = String.format("%1s\\process.bat %2s %3s", filePath, filePath + "\\" + fileName + xmlExtention, filePath + "\\" + fileName + pdfExtention);
+		String command = String.format("merge.exe -form %1s -data %2s -output %3s", fullFormPath, fullDataFilePath, fullOutputFilePath);
 		try{
 			LOG.info("Executing command " + command);
 			process = Runtime.getRuntime().exec(command);
